@@ -6,6 +6,11 @@
   <title>VentoCard • Tarjeta Digital Soberana</title>
   <meta name="description" content="VentoCard: Tarjeta de presentación digital PWA 100% autónoma, privada y ultra rápida con QR inteligente, vCard 3.0, redes sociales y motor de voz." />
   
+  <!-- Security Headers & Anti-Tamper Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self'; object-src 'none'; base-uri 'self';" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta name="referrer" content="no-referrer" />
+  
   <!-- PWA & Mobile Meta Tags -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#0284c7" />
@@ -1843,47 +1848,69 @@
   })();
 
   // ----------------------------------------------------
-  // 2. SECURITY & CRYPTO INTEGRITY ENGINE (OWASP-Compliant)
+  // 2. SECURITY, SANITIZATION & ANTI-TAMPER ENGINE (OWASP-Compliant)
   // ----------------------------------------------------
   const Security = {
-    sanitizeText: function(str) {
+    sanitizeText: function(str, maxLen = 500) {
       if (!str) return '';
       return String(str)
+        .replace(/\0/g, '') // Strip null bytes
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;')
+        .slice(0, maxLen)
+        .trim();
+    },
+
+    sanitizeVCardField: function(str, maxLen = 300) {
+      if (!str) return '';
+      return String(str)
+        .replace(/[\r\n\0]/g, ' ') // Strip CRLF injections
+        .replace(/[\\;:,]/g, (m) => '\\' + m)
+        .slice(0, maxLen)
         .trim();
     },
 
     sanitizeUrl: function(url, protocol = 'https') {
       if (!url) return '';
       const clean = String(url).trim();
-      if (protocol === 'https' && !/^https?:\/\//i.test(clean)) {
-        return 'https://' + clean.replace(/^[a-zA-Z0-9_-]+:\/\//, '');
+      // Block dangerous javascript:, vbscript:, data:, blob:, file: vectors
+      if (/^(javascript|vbscript|data|file|blob|about):/i.test(clean)) {
+        return '#';
+      }
+      if (protocol === 'https') {
+        if (/^https?:\/\//i.test(clean)) {
+          return clean.slice(0, 500);
+        }
+        return ('https://' + clean.replace(/^[a-zA-Z0-9_-]+:\/\//, '')).slice(0, 500);
       }
       if (protocol === 'tel') {
-        return 'tel:' + clean.replace(/[^0-9+]/g, '');
+        const telClean = clean.replace(/[^0-9+]/g, '');
+        return telClean ? `tel:${telClean}` : '#';
       }
       if (protocol === 'mailto') {
-        return 'mailto:' + clean.replace(/[^\w.@+-]/g, '');
+        const mailClean = clean.replace(/[^\w.@+-]/g, '');
+        return mailClean ? `mailto:${mailClean}` : '#';
       }
-      return clean;
+      return clean.slice(0, 500);
     },
 
     getWhatsAppUrl: function(val) {
       if (!val) return '';
       const clean = String(val).trim();
-      if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
-      if (clean.startsWith('@')) {
-        return `https://wa.me/${clean.substring(1)}`;
+      if (/^(javascript|data|file|blob):/i.test(clean)) return '';
+      if (clean.startsWith('http://') || clean.startsWith('https://')) {
+        return this.sanitizeUrl(clean, 'https');
       }
-      // If it's a standard username like 'patricio_atsit' or 'user.123'
+      if (clean.startsWith('@')) {
+        const userClean = clean.substring(1).replace(/[^a-zA-Z0-9_.-]/g, '');
+        return `https://wa.me/${userClean}`;
+      }
       if (/^[a-zA-Z0-9_.-]+$/.test(clean) && isNaN(clean)) {
         return `https://wa.me/${clean}`;
       }
-      // If numeric phone
       const numOnly = clean.replace(/[^0-9]/g, '');
       return numOnly ? `https://wa.me/${numOnly}` : '';
     },
@@ -1891,9 +1918,39 @@
     getTikTokUrl: function(val) {
       if (!val) return '';
       const clean = String(val).trim();
-      if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
-      const handle = clean.replace('@', '');
+      if (/^(javascript|data|file|blob):/i.test(clean)) return '';
+      if (clean.startsWith('http://') || clean.startsWith('https://')) {
+        return this.sanitizeUrl(clean, 'https');
+      }
+      const handle = clean.replace('@', '').replace(/[^a-zA-Z0-9_.-]/g, '');
       return `https://www.tiktok.com/@${handle}`;
+    },
+
+    validatePayloadSchema: function(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+      // Strip prototype pollution keys
+      const cleanObj = Object.create(null);
+      const allowedKeys = ['fn', 'ln', 'org', 'tit', 'mob', 'wau', 'wrk', 'emw', 'emp', 'web', 'lin', 'ins', 'tik', 'git', 'adr', 'bio', 'cs', 't'];
+      allowedKeys.forEach(k => {
+        if (typeof raw[k] === 'string') {
+          cleanObj[k] = raw[k].slice(0, 500);
+        } else {
+          cleanObj[k] = '';
+        }
+      });
+      cleanObj.cf = [];
+      if (Array.isArray(raw.cf)) {
+        raw.cf.slice(0, 20).forEach(item => {
+          if (item && typeof item === 'object') {
+            cleanObj.cf.push({
+              id: String(item.id || '').slice(0, 50),
+              l: String(item.l || item.label || '').slice(0, 80),
+              v: String(item.v || item.value || '').slice(0, 300)
+            });
+          }
+        });
+      }
+      return cleanObj;
     },
 
     // Fast local hash for integrity verification
@@ -3095,16 +3152,19 @@
       if (!hash || !hash.includes('card=')) return false;
 
       const encoded = hash.split('card=')[1];
-      const data = DataCodec.decodePayload(encoded);
-      if (!data) return false;
+      const rawData = DataCodec.decodePayload(encoded);
+      if (!rawData) return false;
+
+      const validated = Security.validatePayloadSchema(rawData);
+      if (!validated) return false;
 
       // Verify integrity checksum
-      if (data.cs && !Security.verifyChecksum(data, data.cs)) {
-        console.warn('⚠️ Alerta: El hash del contacto fue alterado.');
+      if (rawData.cs && !Security.verifyChecksum(validated, rawData.cs)) {
+        console.warn('⚠️ Alerta de Seguridad: El checksum de integridad no coincide.');
       }
 
-      this.receivedData = data;
-      this.renderRecipientView(data);
+      this.receivedData = validated;
+      this.renderRecipientView(validated);
       return true;
     },
 
