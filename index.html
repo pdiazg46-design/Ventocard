@@ -895,11 +895,13 @@
           <path d="M12 12h.01"></path>
         </svg>
         <div>
-          <h1 class="brand-title">VentoCard</h1>
+          <h1 class="brand-title" style="font-size: 16px;">VentoCard <span style="font-size: 11px; font-weight: 500; opacity: 0.8; color: var(--accent);">by ATSIT</span></h1>
         </div>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <span class="brand-badge">Soberana • Local</span>
+        <span class="brand-badge" style="background: rgba(2, 132, 199, 0.2); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; font-size: 9.5px; font-weight: 800;">
+          ATSIT • CORPORATE ID
+        </span>
       </div>
     </header>
 
@@ -2568,7 +2570,7 @@
     getShareBaseUrl: function() {
       let baseUrl = window.location.href.split('#')[0];
       if (baseUrl.startsWith('file://') || baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1') || baseUrl.includes('192.168.')) {
-        return 'https://pdiazg46-design.github.io/Ventocard/';
+        return 'https://atsit.cl/card/';
       }
       return baseUrl;
     },
@@ -2583,7 +2585,7 @@
         // Super Clean vCard 3.0 string for 1-touch mobile camera scanner
         qrPayloadText = VCardGenerator.buildVCardString(p, this.selectedKeys);
       } else {
-        // Interactive Web URL (Always official GitHub Pages URL)
+        // Interactive Web URL (Official ATSIT Domain)
         const shareData = this.getShareDataObject();
         const encoded = DataCodec.encodePayload(shareData);
         const baseUrl = this.getShareBaseUrl();
@@ -2686,7 +2688,8 @@
       const baseUrl = this.getShareBaseUrl();
       const link = `${baseUrl}#card=${encoded}`;
       const name = `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Contacto';
-      const msg = encodeURIComponent(`👋 ¡Hola! Te comparto mi tarjeta de contacto digital de ${name}:\n\n${link}\n\n(Abre el enlace para guardar mi contacto o chatear directamente).`);
+      const org = p.org ? ` (${p.org})` : '';
+      const msg = encodeURIComponent(`👋 Estimado(a), le comparto la tarjeta de contacto ejecutiva de ${name}${org}:\n\n${link}\n\n(Acceso a canales directos y guardado en libreta de contactos en un clic).`);
       window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     },
 
