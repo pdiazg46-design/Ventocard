@@ -986,12 +986,12 @@
         </div>
 
         <!-- Canvas with Central Avatar -->
-        <div class="qr-canvas-container">
-          <canvas id="qrCanvas" width="200" height="200"></canvas>
+        <div class="qr-canvas-container" style="background: #ffffff; padding: 10px; border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
+          <canvas id="qrCanvas" width="240" height="240" style="width: 190px; height: 190px; display: block;"></canvas>
         </div>
 
         <p id="qrModeHint" style="font-size: 11.5px; color: var(--text-muted); line-height: 1.4;">
-          📱 <b>Modo Agenda Directa:</b> Tu cámara de Samsung reconocerá el contacto al instante para guardarlo en la libreta nativa.
+          📱 <b>Modo Agenda Directa (Limpio):</b> Tu cámara de Samsung reconocerá el contacto al instante para guardarlo en la libreta nativa.
         </p>
 
         <!-- Presets Selector -->
@@ -1002,10 +1002,10 @@
           </div>
 
           <div class="presets-row">
-            <button class="preset-chip active" onclick="QRModule.applyPreset('all')">🌟 Todo</button>
+            <button class="preset-chip active" onclick="QRModule.applyPreset('quick')">⚡ Rápido</button>
             <button class="preset-chip" onclick="QRModule.applyPreset('work')">💼 Trabajo</button>
             <button class="preset-chip" onclick="QRModule.applyPreset('personal')">👤 Personal</button>
-            <button class="preset-chip" onclick="QRModule.applyPreset('quick')">⚡ Rápido</button>
+            <button class="preset-chip" onclick="QRModule.applyPreset('all')">🌟 Todo</button>
           </div>
 
           <!-- Modular Checkbox List -->
@@ -1783,7 +1783,7 @@
 
     return {
       drawOnCanvas: function(canvas, text, options = {}) {
-        const ecLevel = options.errorCorrectLevel || QRErrorCorrectLevel.Q; // Q level default for avatar support
+        const ecLevel = options.errorCorrectLevel !== undefined ? options.errorCorrectLevel : (options.avatarImg ? QRErrorCorrectLevel.Q : QRErrorCorrectLevel.M);
         const qr = new QRCodeModel(0, ecLevel);
         qr.addData(text);
         qr.make();
@@ -1791,24 +1791,24 @@
         const moduleCount = qr.getModuleCount();
         const size = canvas.width;
         const ctx = canvas.getContext('2d');
-        const margin = options.margin !== undefined ? options.margin : 12;
+        const margin = options.margin !== undefined ? options.margin : 16;
         const availableSize = size - margin * 2;
         const moduleSize = availableSize / moduleCount;
 
-        // Clear canvas
+        // Clear canvas with crisp white background
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, size, size);
 
-        // Draw QR modules
-        ctx.fillStyle = options.darkColor || '#070b14';
+        // Draw pure black QR modules with pixel-perfect alignment
+        ctx.fillStyle = options.darkColor || '#000000';
         for (let row = 0; row < moduleCount; row++) {
           for (let col = 0; col < moduleCount; col++) {
             if (qr.isDark(row, col)) {
               ctx.fillRect(
-                margin + col * moduleSize,
-                margin + row * moduleSize,
-                moduleSize + 0.3,
-                moduleSize + 0.3
+                Math.round(margin + col * moduleSize),
+                Math.round(margin + row * moduleSize),
+                Math.ceil(moduleSize),
+                Math.ceil(moduleSize)
               );
             }
           }
@@ -2049,32 +2049,32 @@
 
       if (isSelected('org') && p.org) vcf += `ORG:${p.org}\r\n`;
       if (isSelected('title') && p.title) vcf += `TITLE:${p.title}\r\n`;
-      if (isSelected('phoneMobile') && p.phoneMobile) vcf += `TEL;TYPE=CELL,VOICE:${p.phoneMobile}\r\n`;
+      if (isSelected('phoneMobile') && p.phoneMobile) vcf += `TEL;TYPE=CELL:${p.phoneMobile.replace(/\s+/g, '')}\r\n`;
       if (isSelected('whatsappUser') && p.whatsappUser) {
         const wUrl = Security.getWhatsAppUrl(p.whatsappUser);
-        vcf += `X-SOCIALPROFILE;TYPE=whatsapp:${wUrl}\r\n`;
+        vcf += `URL;TYPE=WhatsApp:${wUrl}\r\n`;
       }
-      if (isSelected('phoneWork') && p.phoneWork) vcf += `TEL;TYPE=WORK,VOICE:${p.phoneWork}\r\n`;
-      if (isSelected('emailWork') && p.emailWork) vcf += `EMAIL;TYPE=WORK,INTERNET:${p.emailWork}\r\n`;
-      if (isSelected('emailPersonal') && p.emailPersonal) vcf += `EMAIL;TYPE=HOME,INTERNET:${p.emailPersonal}\r\n`;
+      if (isSelected('phoneWork') && p.phoneWork) vcf += `TEL;TYPE=WORK:${p.phoneWork.replace(/\s+/g, '')}\r\n`;
+      if (isSelected('emailWork') && p.emailWork) vcf += `EMAIL;TYPE=WORK:${p.emailWork}\r\n`;
+      if (isSelected('emailPersonal') && p.emailPersonal) vcf += `EMAIL;TYPE=HOME:${p.emailPersonal}\r\n`;
       if (isSelected('website') && p.website) vcf += `URL:${Security.sanitizeUrl(p.website, 'https')}\r\n`;
       if (isSelected('linkedIn') && p.linkedIn) {
         const lUrl = p.linkedIn.startsWith('http') ? p.linkedIn : `https://linkedin.com/in/${p.linkedIn}`;
-        vcf += `X-SOCIALPROFILE;TYPE=linkedin:${lUrl}\r\n`;
+        vcf += `URL;TYPE=LinkedIn:${lUrl}\r\n`;
       }
       if (isSelected('instagram') && p.instagram) {
         const iHandle = p.instagram.replace('@', '');
-        vcf += `X-SOCIALPROFILE;TYPE=instagram:https://instagram.com/${iHandle}\r\n`;
+        vcf += `URL;TYPE=Instagram:https://instagram.com/${iHandle}\r\n`;
       }
       if (isSelected('tiktok') && p.tiktok) {
         const tUrl = Security.getTikTokUrl(p.tiktok);
-        vcf += `X-SOCIALPROFILE;TYPE=tiktok:${tUrl}\r\n`;
+        vcf += `URL;TYPE=TikTok:${tUrl}\r\n`;
       }
       if (isSelected('github') && p.github) {
-        vcf += `X-SOCIALPROFILE;TYPE=github:https://github.com/${p.github}\r\n`;
+        vcf += `URL;TYPE=GitHub:https://github.com/${p.github}\r\n`;
       }
       if (isSelected('address') && p.address) vcf += `ADR;TYPE=WORK:;;${p.address};;;;\r\n`;
-      if (isSelected('bio') && p.bio) vcf += `NOTE:${p.bio.replace(/\n/g, '\\n')}\r\n`;
+      if (isSelected('bio') && p.bio) vcf += `NOTE:${p.bio.replace(/[\r\n]+/g, ' ')}\r\n`;
 
       // Custom Dynamic Fields Export
       if (p.customFields && Array.isArray(p.customFields)) {
@@ -2082,9 +2082,9 @@
           if (isSelected('custom_' + cf.id) && cf.value) {
             const cleanVal = cf.value.trim();
             if (cleanVal.startsWith('http://') || cleanVal.startsWith('https://')) {
-              vcf += `X-SOCIALPROFILE;TYPE=${cf.label}:${cleanVal}\r\n`;
+              vcf += `URL;TYPE=${cf.label}:${cleanVal}\r\n`;
             } else if (cleanVal.startsWith('@')) {
-              vcf += `X-SOCIALPROFILE;TYPE=${cf.label}:https://instagram.com/${cleanVal.substring(1)}\r\n`;
+              vcf += `URL;TYPE=${cf.label}:https://instagram.com/${cleanVal.substring(1)}\r\n`;
             } else {
               vcf += `NOTE;TYPE=${cf.label}:${cf.label}: ${cleanVal}\r\n`;
             }
@@ -2466,7 +2466,7 @@
     ],
 
     init: function() {
-      this.applyPreset('all');
+      this.applyPreset('quick');
     },
 
     applyPreset: function(presetName) {
