@@ -1375,53 +1375,27 @@
       <!-- LEFT COLUMN (On Desktop) / PRIMARY CARD: QR & FAST ACTIONS -->
       <div class="glass-card qr-hero-card">
         
-        <!-- Desktop WhatsApp-Web Pairing State (For PC / Laptop) -->
-        <div id="qrDesktopPairCard" style="display: none; text-align: center; padding: 24px 18px;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 6px;">
-            <span style="font-size: 26px;">💻</span>
-            <h3 style="font-size: 19px; font-weight: 800; color: #fff; margin: 0;">VentoCard Web</h3>
-          </div>
-          <p style="font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px;">
-            Sincroniza tus contactos y perfiles desde tu celular.
-          </p>
-
-          <!-- Pairing QR Canvas -->
-          <div style="background: #ffffff; padding: 12px; border-radius: 18px; box-shadow: 0 8px 30px rgba(0,0,0,0.5); width: 200px; height: 200px; margin: 0 auto 16px auto; display: flex; align-items: center; justify-content: center;">
-            <canvas id="desktopPairCanvas" width="180" height="180" style="width: 176px; height: 176px;"></canvas>
-          </div>
-
-          <div style="text-align: left; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: #94a3b8; display: flex; flex-direction: column; gap: 6px;">
-            <div>1. Abre <strong>VentoCard</strong> en tu teléfono.</div>
-            <div>2. Toca <strong>📷 Escanear</strong> arriba.</div>
-            <div>3. Apunta a este código QR para vincular.</div>
-          </div>
-
-          <div style="display: flex; gap: 8px; justify-content: center;">
-            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 11.5px; padding: 7px 12px;" onclick="DesktopLinkManager.restoreViaPin()">
-              🔑 PIN de Bóveda
-            </button>
-            <button type="button" class="btn btn-sm" style="background: transparent; color: var(--text-dim); font-size: 11px; border: 1px solid var(--border-subtle); padding: 7px 10px;" onclick="DesktopLinkManager.skipPairing()">
-              Configurar en este PC
-            </button>
-          </div>
-        </div>
-
         <!-- Unconfigured New User Welcome State -->
-        <div id="qrEmptyStateCard" style="display: none; text-align: center; padding: 28px 18px;">
-          <div style="font-size: 52px; margin-bottom: 10px; filter: drop-shadow(0 4px 18px rgba(56, 189, 248, 0.4));">📇</div>
-          <h3 style="font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 8px;">Bienvenido a VentoCard</h3>
+        <div id="qrEmptyStateCard" style="display: none; text-align: center; padding: 24px 18px;">
+          <div style="font-size: 48px; margin-bottom: 10px; filter: drop-shadow(0 4px 18px rgba(56, 189, 248, 0.4));">📇</div>
+          <h3 style="font-size: 19px; font-weight: 800; color: #fff; margin-bottom: 8px;">Bienvenido a VentoCard</h3>
           
-          <div id="welcomeSenderBadge" style="display: none; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; font-size: 12.5px; font-weight: 700; padding: 6px 14px; border-radius: 20px; margin: 0 auto 16px auto; width: fit-content; align-items: center; gap: 6px;">
+          <div id="welcomeSenderBadge" style="display: none; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 20px; margin: 0 auto 14px auto; width: fit-content; align-items: center; gap: 6px;">
             <span>✅</span> <span id="welcomeSenderText">Contacto guardado en tu libreta</span>
           </div>
 
-          <p style="font-size: 13.5px; color: var(--text-muted); line-height: 1.55; margin-bottom: 22px;">
-            El contacto de quien te compartió este enlace ya está guardado en tu pestaña de <strong>Contactos</strong>.<br><br>
-            Configura tu propia tarjeta para generar tu código QR interactivo y compartir tus datos profesionales.
+          <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px;">
+            Ten tu tarjeta de presentación digital con QR inteligente, canales directos (Llamar, WhatsApp, Redes) y libreta soberana.
           </p>
-          <button type="button" class="btn btn-primary btn-block" style="font-size: 14.5px; font-weight: 800; padding: 13px;" onclick="AppNav.switchTab('profiles')">
-            🚀 Configurar Mi Tarjeta Digital
-          </button>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button type="button" class="btn btn-primary btn-block" style="font-size: 14px; font-weight: 800; padding: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="QRScannerModule.openScanner()">
+              <span>📷</span> <span>Escanear Tarjeta / Importar desde Celular</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-block" style="font-size: 13.5px; font-weight: 700; padding: 11px;" onclick="AppNav.switchTab('profiles')">
+              🚀 Configurar Tarjeta Manual
+            </button>
+          </div>
         </div>
 
         <!-- Configured Active QR Sharing Console -->
@@ -1728,7 +1702,7 @@
           <!-- Auto-Update Status Card -->
           <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <div style="font-weight: 700; font-size: 12px; color: #fff;">VentoCard <span id="appVersionBadge" style="color: var(--accent);">v1.6.5</span></div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">VentoCard <span id="appVersionBadge" style="color: var(--accent);">v1.6.6</span></div>
               <div id="updateStatusText" style="font-size: 10.5px; color: #34d399;">● Auto-Actualización Activa (Datos Protegidos)</div>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" onclick="UpdateManager.checkForUpdateManual()">
@@ -1793,9 +1767,8 @@
           <p style="font-size: 11.5px; color: var(--text-muted); line-height: 1.45; margin-bottom: 12px;">
             Para usar VentoCard en tu PC o Mac:<br>
             <strong>1.</strong> Entra en tu computador a: <strong style="color: #fff;">https://atsit.cl/card</strong><br>
-            <strong>2.</strong> En la pantalla del PC verás el código QR de vinculación.<br>
-            <strong>3.</strong> Toca <strong>📷 Escanear</strong> arriba en este teléfono y apunta al PC.<br>
-            ¡Tus perfiles y contactos se sincronizarán al instante!
+            <strong>2.</strong> En la pantalla del PC toca <strong>📷 Escanear Tarjeta</strong> y muestra el código QR de tu celular a la cámara web.<br>
+            ¡Tus datos y perfiles se activarán al instante en el computador!
           </p>
 
           <button type="button" class="btn btn-secondary btn-sm" style="width: 100%; font-weight: 700; font-size: 12px; padding: 9px; display: flex; align-items: center; justify-content: center; gap: 6px;" onclick="navigator.clipboard.writeText('https://atsit.cl/card').then(() => UIModal.toast('🔗 Enlace copiado: atsit.cl/card'))">
@@ -1806,7 +1779,7 @@
 
       <!-- Footer Info -->
       <div class="full-width-desktop" style="font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.5; padding: 8px 0;">
-        VentoCard v1.6.5 • PWA Autónoma Soberana<br>
+        VentoCard v1.6.6 • PWA Autónoma Soberana<br>
         Ciberseguridad OWASP & Protección de Datos ATSIT
       </div>
     </div>
@@ -2864,6 +2837,26 @@
       return this.profiles.find(p => p.id === this.activeProfileId) || this.profiles[0] || null;
     },
 
+    importAsPrimaryProfile: function(pData) {
+      if (!pData.id) pData.id = 'prof_' + Date.now();
+      if (!pData.profileTag) pData.profileTag = pData.org ? `${pData.org}` : 'Mi Perfil';
+      if (!pData.customFields) pData.customFields = [];
+
+      // If only default unconfigured profile exists, replace it
+      if (this.profiles.length === 1 && (!this.profiles[0].firstName || !this.profiles[0].firstName.trim())) {
+        this.profiles = [pData];
+      } else {
+        this.profiles = this.profiles.filter(p => `${p.firstName}_${p.lastName}` !== `${pData.firstName}_${pData.lastName}`);
+        this.profiles.unshift(pData);
+      }
+      this.activeProfileId = pData.id;
+      this.saveAll();
+      this.renderProfilesList();
+      this.populateFormWithActive();
+      QRModule.refresh();
+      AppNav.updateHeader();
+    },
+
     saveAll: function() {
       localStorage.setItem(StorageKeys.PROFILES, JSON.stringify(this.profiles));
       if (this.activeProfileId) {
@@ -3354,20 +3347,9 @@
       const canvas = document.getElementById('qrCanvas');
       const emptyCard = document.getElementById('qrEmptyStateCard');
       const activeCard = document.getElementById('qrActiveHeroCard');
-      const desktopPairCard = document.getElementById('qrDesktopPairCard');
 
       if (!p || !p.firstName) {
         if (activeCard) activeCard.style.display = 'none';
-
-        // Check if running on Desktop PC to show WhatsApp-Web pairing QR
-        if (DesktopLinkManager.isDesktop() && !sessionStorage.getItem('ventocard_skip_desktop_pair')) {
-          if (emptyCard) emptyCard.style.display = 'none';
-          if (desktopPairCard) desktopPairCard.style.display = 'block';
-          DesktopLinkManager.startPairingSession();
-          return;
-        }
-
-        if (desktopPairCard) desktopPairCard.style.display = 'none';
         if (emptyCard) emptyCard.style.display = 'block';
 
         const sender = sessionStorage.getItem('ventocard_welcome_sender');
@@ -3384,7 +3366,6 @@
         return;
       }
 
-      if (desktopPairCard) desktopPairCard.style.display = 'none';
       if (emptyCard) emptyCard.style.display = 'none';
       if (activeCard) activeCard.style.display = 'block';
 
@@ -3799,7 +3780,7 @@
       }, 120);
     },
 
-    processScannedResult: function(qrText) {
+    processScannedResult: async function(qrText) {
       if (!qrText) return;
       this.closeScanner();
 
@@ -3819,7 +3800,8 @@
         if (rawData) {
           const validated = Security.validatePayloadSchema(rawData);
           if (validated) {
-            DirectoryModule.addContact({
+            const cardObj = {
+              profileTag: validated.org ? `${validated.org}` : 'Mi Perfil',
               firstName: validated.fn || 'Contacto',
               lastName: validated.ln || '',
               org: validated.org || '',
@@ -3836,15 +3818,42 @@
               github: validated.git || '',
               address: validated.adr || '',
               bio: validated.bio || ''
-            });
+            };
 
-            UIModal.alert(
-              '¡Contacto Escaneado con Éxito!',
-              `Se ha guardado a ${validated.fn || 'Contacto'} ${validated.ln || ''} (${validated.org || 'ATSIT'}) en tu libreta de VentoCard.`,
-              '📇'
-            );
-            AppNav.switchTab('directory');
-            return;
+            const activeP = ProfilesModule.getActiveProfile();
+            const hasProfile = activeP && activeP.firstName && activeP.firstName.trim().length > 0;
+
+            if (!hasProfile) {
+              // Automatically activate as primary profile on this device!
+              ProfilesModule.importAsPrimaryProfile(cardObj);
+              UIModal.alert(
+                '¡Tarjeta Activada con Éxito!',
+                `Tu tarjeta digital de ${validated.fn || ''} ${validated.ln || ''} ya está activa en este equipo.`,
+                '🚀'
+              );
+              AppNav.switchTab('qr');
+              return;
+            } else {
+              const choice = await UIModal.confirm(
+                'Tarjeta Escaneada',
+                `¿Deseas activar la tarjeta de ${validated.fn || ''} ${validated.ln || ''} como tu perfil en este equipo o guardarla como contacto?`,
+                '👤',
+                'Activar como Mi Perfil',
+                'Guardar en Contactos'
+              );
+
+              if (choice) {
+                ProfilesModule.importAsPrimaryProfile(cardObj);
+                UIModal.toast('🚀 Perfil activado en este equipo');
+                AppNav.switchTab('qr');
+                return;
+              } else {
+                DirectoryModule.addContact(cardObj);
+                UIModal.toast(`📇 Guardado en contactos: ${validated.fn}`);
+                AppNav.switchTab('directory');
+                return;
+              }
+            }
           }
         }
       }
