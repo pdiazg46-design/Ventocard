@@ -1730,7 +1730,7 @@
           <!-- Auto-Update Status Card -->
           <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
             <div>
-              <div style="font-weight: 700; font-size: 12px; color: #fff;">VentoCard <span id="appVersionBadge" style="color: var(--accent);">v1.6.7</span></div>
+              <div style="font-weight: 700; font-size: 12px; color: #fff;">VentoCard <span id="appVersionBadge" style="color: var(--accent);">v1.7.0</span></div>
               <div id="updateStatusText" style="font-size: 10.5px; color: #34d399;">● Auto-Actualización Activa (Datos Protegidos)</div>
             </div>
             <button type="button" class="btn btn-secondary btn-sm" onclick="UpdateManager.checkForUpdateManual()">
@@ -1808,7 +1808,7 @@
 
       <!-- Footer Info -->
       <div class="full-width-desktop" style="font-size: 11px; color: var(--text-dim); text-align: center; line-height: 1.5; padding: 8px 0;">
-        VentoCard v1.6.7 • PWA Autónoma Soberana<br>
+        VentoCard v1.7.0 • PWA Autónoma Soberana<br>
         Ciberseguridad OWASP & Protección de Datos ATSIT
       </div>
     </div>
@@ -4471,6 +4471,29 @@
     },
 
     handlePairingUpload: async function(pairId) {
+      // Security verification: require 4-digit PIN if configured
+      const appPin = (SettingsModule.settings && SettingsModule.settings.pin) ? SettingsModule.settings.pin : '';
+      const vaultPin = (typeof AtsitCloudVaultModule !== 'undefined') ? AtsitCloudVaultModule.getPin() : '';
+      const requiredPin = appPin || vaultPin;
+
+      if (requiredPin) {
+        const enteredPin = await UIModal.prompt(
+          'Autorizar Vinculación Web',
+          'Ingresa tu PIN de seguridad (4 dígitos) para transferir tu sesión al computador:',
+          '',
+          '🔐',
+          'password',
+          'Vincular Computador',
+          'Cancelar'
+        );
+
+        if (!enteredPin || enteredPin.trim() !== requiredPin.trim()) {
+          UIModal.alert('PIN Incorrecto', 'No se autorizó la transferencia de sesión al computador.', '❌');
+          window.location.hash = '';
+          return;
+        }
+      }
+
       const payload = {
         profiles: ProfilesModule.profiles,
         contacts: DirectoryModule.contacts,
